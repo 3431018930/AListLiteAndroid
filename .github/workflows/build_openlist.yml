@@ -48,6 +48,10 @@ jobs:
         # 设置工作目录到 Go 项目的根目录
         working-directory: ${{ github.workspace }}/AListLib/sources
         run: |
+          echo "Adding replace directive to go.mod to use local modules"
+          # ❗️【修复关键】: 将内部依赖指向本地代码
+          echo "replace github.com/OpenListTeam/OpenList/v4 => ./" >> go.mod
+          
           echo "Fetching Go module dependencies..."
           # 下载依赖
           go mod tidy
@@ -73,8 +77,3 @@ jobs:
       - name: Set personalized config (Optional)
         run: |
           echo "This step can be used to set the versions in your Android app source files."
-          # 您可以在这里放置更新版本号的 sed 命令
-          # 例如:
-          # TAG_NAME=$(curl -s https://api.github.com/repos/OpenListTeam/OpenList/releases/latest | grep -o '"tag_name": ".*"' | cut -d'"' -f4)
-          # sed -i "s/\(public static String OPENLIST_VERSION = \"\)\([^\";]*\)\(\";\)/\1${TAG_NAME}\3/" ${{ github.workspace }}/app/src/main/java/com/leohao/android/alistlite/util/Constants.java
-
