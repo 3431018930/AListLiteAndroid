@@ -15,14 +15,31 @@ jobs:
 
       - name: checkout_code
         uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+
+      - name: Create libs directory
+        run: mkdir -p $GITHUB_WORKSPACE/app/libs
+
+      - name: Debug directory structure
+        run: |
+          ls -la $GITHUB_WORKSPACE
+          ls -la $GITHUB_WORKSPACE/AListLib || echo "AListLib directory not found"
 
       - name: build openlist aar
         run: |
           cd $GITHUB_WORKSPACE/AListLib/scripts
+          pwd
+          ls -la
+          echo "Installing alist..."
           sh install_alist.sh
+          echo "Installing gomobile..."
           sh install_gomobile.sh
+          echo "Building AAR..."
           sh build_aar.sh
-          cp -f $GITHUB_WORKSPACE/AListLib/sources/alistlib.aar $GITHUB_WORKSPACE/app/libs
+          echo "Checking for generated AAR..."
+          ls -la $GITHUB_WORKSPACE/AListLib/sources
+          cp -f $GITHUB_WORKSPACE/AListLib/sources/alistlib.aar $GITHUB_WORKSPACE/app/libs || echo "Failed to copy AAR file"
       
       - name: Upload alistlib.aar artifact
         uses: actions/upload-artifact@v4
