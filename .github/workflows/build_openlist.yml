@@ -8,71 +8,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
+      - uses: actions/setup-go@v4
         with:
-          go-version: '1.24.1'
+          go-version: 1.24.1
           cache-dependency-path: ${{ github.workspace }}/AListLib/go.sum
 
-      - name: Install gomobile
+      - name: checkout_code
+        uses: actions/checkout@v3
+
+      - name: build openlist aar
         run: |
-          go install golang.org/x/mobile/cmd/gomobile@latest
-          # 将 go bin 目录添加到 PATH，确保后续步骤能找到 gomobile
-          echo "$(go env GOBIN)" >> $GITHUB_PATH
-          gomobile init
-
-      - name: Download OpenList source and frontend
-        run: |
-          # 确保目标目录存在
-          mkdir -p ${{ github.workspace }}/AListLib/sources
+          cd $GITHUB_WORKSPACE/AListLib/scripts
+          sh install_alist.sh
+          sh install_gomobile.sh
+          sh build_aar.sh
+          cp -f $GITHUB_WORKSPACE/AListLib/sources/alistlib.aar $GITHUB_WORKSPACE/app/libs          
           
-          # 获取最新的 OpenList tag
-          TAG_NAME=$(curl -s https://api.github.com/repos/OpenListTeam/OpenList/releases/latest | grep -o '"tag_name": ".*"' | cut -d'"' -f4)
-          echo "Latest OpenList tag is ${TAG_NAME}"
-
-          # 下载 OpenList 后端源码
-          BACKEND_URL="https://github.com/OpenListTeam/OpenList/archive/refs/tags/${TAG_NAME}.tar.gz"
-          echo "Downloading OpenList source from ${BACKEND_URL}"
-          curl -L "${BACKEND_URL}" | tar xz --strip-components=1 -C "${{ github.workspace }}/AListLib/sources"
-
-          # 下载 OpenList 前端
-          FRONTEND_URL="https://github.com/OpenListTeam/OpenList-Frontend/releases/latest/download/openlist-frontend-dist-${TAG_NAME}.tar.gz"
-          echo "Downloading OpenList frontend from ${FRONTEND_URL}"
-          mkdir -p "${{ github.workspace }}/AListLib/sources/public/dist"
-          curl -L "${FRONTEND_URL}" | tar xz -C "${{ github.workspace }}/AListLib/sources/public/dist"
-
-      - name: Build alistlib.aar
-        # 设置工作目录到 Go 项目的根目录
-        working-directory: ${{ github.workspace }}/AListLib/sources
-        run: |
-          echo "Adding replace directive to go.mod to use local modules"
-          # ❗️【修复此问题的关键命令】
-          # 告诉 Go 工具，对于 v4 模块的引用，请直接使用当前目录的代码
-          echo "replace github.com/OpenListTeam/OpenList/v4 => ./" >> go.mod
-          
-          echo "Fetching Go module dependencies..."
-          go mod tidy
-          
-          echo "Building alistlib.aar..."
-          gomobile bind -ldflags="-s -w" -v -androidapi 21 "github.com/OpenListTeam/OpenList/v4/alistlib"
-          
-          # 检查 AAR 文件是否成功生成
-          if [ ! -f "alistlib.aar" ]; then
-            echo "::error::Failed to build alistlib.aar. The file was not found after the build command."
-            exit 1
-          fi
-          
-          echo "alistlib.aar built successfully."
-
-      - name: Copy AAR to app libs
-        run: |
-          mkdir -p ${{ github.workspace }}/app/libs
-          cp -f ${{ github.workspace }}/AListLib/sources/alistlib.aar ${{ github.workspace }}/app/libs/
-          echo "alistlib.aar copied to app/libs"
-
-      - name: Set personalized config (Optional)
-        run: |
-          echo "This step can be used to set the versions in your Android app source files."
