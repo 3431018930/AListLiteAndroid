@@ -16,9 +16,14 @@ jobs:
       - name: checkout_code
         uses: actions/checkout@v3
 
-      - name: Install gomobile
+      - name: Install gomobile and initialize
         run: |
           go install golang.org/x/mobile/cmd/gomobile@latest
+          # 切换到AListLib目录，因为gomobile init可能需要在项目的根目录或Go模块目录下执行
+          cd $GITHUB_WORKSPACE/AListLib
+          gomobile init
+          # 返回脚本目录，以便执行后续的构建脚本
+          cd $GITHUB_WORKSPACE/AListLib/scripts
 
       - name: build openlist aar
         run: |
