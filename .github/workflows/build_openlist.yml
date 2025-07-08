@@ -22,4 +22,11 @@ jobs:
           sh install_alist.sh
           sh install_gomobile.sh
           sh build_aar.sh
-          cp -f $GITHUB_WORKSPACE/AListLib/sources/alistlib.aar $GITHUB_WORKSPACE/app/libs          
+          cp -f $GITHUB_WORKSPACE/AListLib/sources/alistlib.aar $GITHUB_WORKSPACE/app/libs
+      
+      - name: Upload alistlib.aar artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: alistlib-aar
+          path: ${{ github.workspace }}/app/libs/alistlib.aar
+          if-no-files-found: error          
