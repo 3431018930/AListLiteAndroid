@@ -1,3 +1,9 @@
+name: build_openlist
+
+on:
+  # 支持手动触发
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -7,38 +13,13 @@ jobs:
           go-version: 1.24.1
           cache-dependency-path: ${{ github.workspace }}/AListLib/go.sum
 
-      - uses: actions/setup-node@v4  # 新增 Node.js 环境
-        with:
-          node-version: 20
+      - name: checkout_code
+        uses: actions/checkout@v3
 
-      - uses: actions/checkout@v3
-
-      # 1. 构建前端
-      - name: Build frontend
-        run: |
-          cd $GITHUB_WORKSPACE/AListLib/frontend
-          npm ci         # 确定性依赖安装
-          npm run build  # 生成 dist 目录
-
-      # 2. 验证 dist 非空
-      - name: Check dist directory
-        run: |
-          if [ ! -d "$GITHUB_WORKSPACE/AListLib/frontend/dist" ] || [ -z "$(ls -A $GITHUB_WORKSPACE/AListLib/frontend/dist)" ]; then
-            echo "❌ dist 目录为空！检查前端构建日志。"
-            exit 1
-          fi
-
-      # 3. 构建 AAR
-      - name: Build aar
+      - name: build openlist aar
         run: |
           cd $GITHUB_WORKSPACE/AListLib/scripts
           sh install_alist.sh
           sh install_gomobile.sh
           sh build_aar.sh
-          cp -f $GITHUB_WORKSPACE/AListLib/sources/alistlib.aar $GITHUB_WORKSPACE/app/libs
-
-      # 4. 上传产物
-      - uses: actions/upload-artifact@v4
-        with:
-          name: alistlib-aar
-          path: ${{ github.workspace }}/app/libs/alistlib.aar
+          cp -f $GITHUB_WORKSPACE/AListLib/sources/alistlib.aar $GITHUB_WORKSPACE/app/libs          
