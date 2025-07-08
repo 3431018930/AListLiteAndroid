@@ -16,26 +16,11 @@ jobs:
       - name: checkout_code
         uses: actions/checkout@v3
 
-      - name: Install gomobile and initialize
-        run: |
-          go install golang.org/x/mobile/cmd/gomobile@latest
-
-          # 切换到AListLib目录（你的Go模块根目录）
-          cd $GITHUB_WORKSPACE/AListLib
-
-          # 现在在Go模块内部，可以安全地使用 go get 或 go mod tidy
-          # 这里我们先尝试 go get，如果 alistlib 的 go.mod 没有明确引用 bind，可能需要
-          go get golang.org/x/mobile/bind
-          
-          # 执行 gomobile 初始化
-          gomobile init
-
-          # 返回脚本目录，以便执行后续的构建脚本
-          cd $GITHUB_WORKSPACE/AListLib/scripts
-
       - name: build openlist aar
         run: |
           cd $GITHUB_WORKSPACE/AListLib/scripts
           sh install_alist.sh
+          sh install_gomobile.sh
           sh build_aar.sh
-          cp -f $GITHUB_WORKSPACE/AListLib/sources/alistlib.aar $GITHUB_WORKSPACE/app/libs
+          cp -f $GITHUB_WORKSPACE/AListLib/sources/alistlib.aar $GITHUB_WORKSPACE/app/libs          
+          
