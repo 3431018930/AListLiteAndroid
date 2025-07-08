@@ -16,11 +16,13 @@ jobs:
       - name: checkout_code
         uses: actions/checkout@v3
 
+      - name: Install gomobile
+        run: |
+          go install golang.org/x/mobile/cmd/gomobile@latest
+
       - name: build openlist aar
         run: |
           cd $GITHUB_WORKSPACE/AListLib/scripts
           sh install_alist.sh
-          sh install_gomobile.sh
           sh build_aar.sh
-          cp -f $GITHUB_WORKSPACE/AListLib/sources/alistlib.aar $GITHUB_WORKSPACE/app/libs          
-          
+          cp -f $GITHUB_WORKSPACE/AListLib/sources/alistlib.aar $GITHUB_WORKSPACE/app/libs
