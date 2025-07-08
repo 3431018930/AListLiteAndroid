@@ -49,15 +49,14 @@ jobs:
         working-directory: ${{ github.workspace }}/AListLib/sources
         run: |
           echo "Adding replace directive to go.mod to use local modules"
-          # ❗️【修复关键】: 将内部依赖指向本地代码
+          # ❗️【修复此问题的关键命令】
+          # 告诉 Go 工具，对于 v4 模块的引用，请直接使用当前目录的代码
           echo "replace github.com/OpenListTeam/OpenList/v4 => ./" >> go.mod
           
           echo "Fetching Go module dependencies..."
-          # 下载依赖
           go mod tidy
           
           echo "Building alistlib.aar..."
-          # 执行构建
           gomobile bind -ldflags="-s -w" -v -androidapi 21 "github.com/OpenListTeam/OpenList/v4/alistlib"
           
           # 检查 AAR 文件是否成功生成
