@@ -25,7 +25,7 @@ jobs:
           cp -f $GITHUB_WORKSPACE/AListLib/sources/alistlib.aar $GITHUB_WORKSPACE/app/libs
       
       - name: Upload alistlib.aar artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: alistlib-aar
           path: ${{ github.workspace }}/app/libs/alistlib.aar
