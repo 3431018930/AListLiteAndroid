@@ -8,19 +8,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v4
+      - name: Set up Go
+        uses: actions/setup-go@v4
         with:
           go-version: 1.24.1
           cache-dependency-path: ${{ github.workspace }}/AListLib/go.sum
 
-      - name: checkout_code
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: build openlist aar
+      - name: Build openlist aar
         run: |
           cd $GITHUB_WORKSPACE/AListLib/scripts
           sh install_alist.sh
           sh install_gomobile.sh
           sh build_aar.sh
-          cp -f $GITHUB_WORKSPACE/AListLib/sources/alistlib.aar $GITHUB_WORKSPACE/app/libs          
-          
+          cp -f $GITHUB_WORKSPACE/AListLib/sources/alistlib.aar $GITHUB_WORKSPACE/app/libs
+
+      # 新增：上传构建产物
+      - name: Upload alistlib.aar as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: alistlib-aar   # Artifact 名称（后续下载时使用）
+          path: ${{ github.workspace }}/app/libs/alistlib.aar  # 文件路径
+          retention-days: 30    # 保留时长（默认90天，可调整）
